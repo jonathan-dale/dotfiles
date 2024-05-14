@@ -1,57 +1,23 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="robbyrussell"
-
-
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
-
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
-
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+###  plugins=(git asdf aws)
 plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
-alias k=kubectl
 alias c=clear
+alias k=kubectl
+alias ktx=kubectx
+alias kns=kubens
 
 echo "----- neofetch -----"
 neofetch
@@ -85,5 +51,34 @@ HISTORY_IGNORE="(ls|cd|pwd|exit|cd)*"
 ## setopt APPEND_HISTORY        # append to history file (Default)
 ## setopt HIST_NO_STORE         # Don't store history commands
 ## setopt HIST_REDUCE_BLANKS    # Remove superfluous blanks from each command line being added to the history.
+
+export GPG_TTY=$(tty)
+
+## completion
+#source ~/.completion/*
+source <(kubectl completion zsh)
+source <(helm completion zsh)
+source <(k3d completion zsh)
+
+helm completion zsh > "${fpath[1]/_helm"
+
+## add bin directory to my path
+export PATH=$PATH:~/bin
+
+## add ssh agent
+# ssh-add
+# ssh-add -lq
+
+complete -o nospace -C /usr/local/bin/terraform terraform
+
+export PATH="${homebrewPrefix/opt/openssl/bin:$PATH"
+export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+## shasum256, either one of these work https://unix.stackexchange.com/a/426838
+function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; } 
+## function sha256sum() { shasum -a 256 "$@" ; } && export -f sha256sum
+
+
+
 
 
