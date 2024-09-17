@@ -1,0 +1,7 @@
+tap "homebrew/bundle"
+brew "coreutils"
+brew "docker-completion"
+brew "jq"
+brew "kubectx"
+brew "neofetch"
+cask "balenaetcher"

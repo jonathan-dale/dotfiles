@@ -1,0 +1,12 @@
+!#/usr/bin/env zsh
+
+## Works for zsh shell, place it in the ~/bin directory with your jenkins-cli.jar
+## Update the SERVER_TOKEN
+## Run with 'jlint /path/to/Jenkinsfile'
+
+USER=user_id
+SERVER_URL="https://jenkins.com"
+SERVER_TOKEN="add_your_git_token_here"
+
+java -jar ~/bin/jenkins-cli.jar -s "${SERVER_URL}" \
+     -auth "${USER}:${SERVER_TOKEN}" declarative-linter < Jenkinsfile
