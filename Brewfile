@@ -1,4 +1,5 @@
 tap "homebrew/bundle"
+brew "age"
 brew "coreutils"
 brew "docker-completion"
 brew "gnupg"
