@@ -19,8 +19,8 @@ alias k=kubectl
 alias ktx=kubectx
 alias kns=kubens
 
-echo "----- neofetch -----"
-neofetch
+# echo "----- neofetch -----"
+# neofetch
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="/Users/jonathandale/.rd/bin:$PATH"
@@ -60,7 +60,8 @@ source <(kubectl completion zsh)
 source <(helm completion zsh)
 source <(k3d completion zsh)
 
-helm completion zsh > "${fpath[1]/_helm"
+# Generate helm completion into the first fpath entry's _helm file. Fixed missing brace/quote.
+helm completion zsh > "${fpath[1]}/_helm"
 
 ## add bin directory to my path
 export PATH=$PATH:~/bin
@@ -71,7 +72,9 @@ export PATH=$PATH:~/bin
 
 complete -o nospace -C /usr/local/bin/terraform terraform
 
-export PATH="${homebrewPrefix/opt/openssl/bin:$PATH"
+export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
+
+## VS code
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 ## shasum256, either one of these work https://unix.stackexchange.com/a/426838
@@ -80,5 +83,18 @@ function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; }
 
 
 
-
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/opt/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/opt/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
 
