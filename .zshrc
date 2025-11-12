@@ -60,6 +60,8 @@ source <(kubectl completion zsh)
 source <(helm completion zsh)
 source <(k3d completion zsh)
 
+complete -o nospace -C /opt/homebrew/bin/terraform terraform
+
 # Generate helm completion into the first fpath entry's _helm file. Fixed missing brace/quote.
 helm completion zsh > "${fpath[1]}/_helm"
 
@@ -70,7 +72,6 @@ export PATH=$PATH:~/bin
 # ssh-add
 # ssh-add -lq
 
-complete -o nospace -C /usr/local/bin/terraform terraform
 
 export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
 
