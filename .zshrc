@@ -18,6 +18,7 @@ alias c=clear
 alias k=kubectl
 alias ktx=kubectx
 alias kns=kubens
+alias python=python3
 
 # echo "----- neofetch -----"
 # neofetch
