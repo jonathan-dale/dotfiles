@@ -88,11 +88,14 @@ export PATH=$PATH:~/bin
 # eval "$(ssh-agent -s)"
 # ssh-add ~/.ssh/id_ed25519
 
-
+# openssl
 export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
 
 ## VS code
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+## Postgres
+export PATH=$PATH:/opt/homebrew/opt/postgresql@17/bin
 
 ## shasum256, either one of these work https://unix.stackexchange.com/a/426838
 function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; } 
