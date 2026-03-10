@@ -83,10 +83,10 @@ helm completion zsh > "${fpath[1]}/_helm"
 export PATH=$PATH:~/bin
 
 ## add ssh agent
-# ssh-add
-# ssh-add -lq
-# eval "$(ssh-agent -s)"
-# ssh-add ~/.ssh/id_ed25519
+ssh-add
+ssh-add -lq
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
 
 # openssl
 export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
