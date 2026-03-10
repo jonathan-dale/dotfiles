@@ -83,10 +83,22 @@ helm completion zsh > "${fpath[1]}/_helm"
 export PATH=$PATH:~/bin
 
 ## add ssh agent
-ssh-add
-ssh-add -lq
+# ssh-add
+# ssh-add -lq
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
+
+## git log --show-signature -1
+## Check for "Hidden" Error Messages - "error: gpg.ssh.allowedSignersFile needs to be configured..."
+##
+## To fix above error message, tell git to trust your own key only run one time to sign git commits
+#  touch ~/.ssh/allowed_signers
+#  echo "$(git config user.email) namespaces=\"git\" $(cat ~/.ssh/id_ed25519.pub)" >> ~/.ssh/allowed_signers
+#  git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+## Test again: git log --show-signature -1
+# To see if the signature exists independently of the verification logic, run:
+# git show --pretty=raw -1
+
 
 # openssl
 export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
