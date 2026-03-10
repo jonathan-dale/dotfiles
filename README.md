@@ -25,3 +25,4 @@ brew bundle dump --file=~/dotfiles/Brewfile --force
 # Installing a Brewfile
 brew bundle install --file=~/dotfiles/Brewfile
 ```
+rest
