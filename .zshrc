@@ -31,6 +31,10 @@ source $ZSH/oh-my-zsh.sh
 ## Preference -> Advanced -> Mouse Tab 
 ## Change: "Scroll wheel sends arrow keys when in alternate screen mode" to "yes" 
 
+# Used for fuzy finding with kubectx/kubens
+# https://github.com/ahmetb/kubectx#interactive-mode
+# https://github.com/junegunn/fzf
+# brew install fzf
 
 #####################
 #####################
@@ -46,6 +50,7 @@ alias ktx=kubectx
 alias kns=kubens
 #alias python=python3
 alias docker=nerdctl
+alias random="openssl rand -base64 20 | sed -E 's/(.)\1+/\1/g'"
 
 
 ## just for fun...
