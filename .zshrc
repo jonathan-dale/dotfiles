@@ -1,5 +1,7 @@
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
+## ZSH_THEME="bira"
+## ZSH_THEME="candy"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
@@ -23,7 +25,20 @@ ZHS_AUTOSUGGEST_HIGHLIGHT_STYLE="fg-9"
 
 source $ZSH/oh-my-zsh.sh
 
+
+### Important:
+### Enable mouse scrolling in iterm
+## Preference -> Advanced -> Mouse Tab 
+## Change: "Scroll wheel sends arrow keys when in alternate screen mode" to "yes" 
+
+
+#####################
+#####################
+#
 # User configuration
+#
+#####################
+#####################
 
 alias c=clear
 alias k=kubectl
@@ -32,13 +47,121 @@ alias kns=kubens
 #alias python=python3
 alias docker=nerdctl
 
+
+## just for fun...
 # echo "----- neofetch -----"
 # neofetch
 
 
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/jonathandale/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+## Switch between kubectl versions using brew (make sure Rancher Desktop's path wrapper in disabled)
+alias use-kube134="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.34 && kubectl version --client"
+alias use-kube135="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.35 && kubectl version --client"
+alias use-kube136="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.36 && kubectl version --client"
+
+
+## uv
+export PATH="~/.local/bin:$PATH"
+eval "$(uv generate-shell-completion zsh)"
+
+
+## GPG
+export GPG_TTY=$(tty)
+
+
+## age
+#export SOPS_AGE_KEY_FILE='/Users/jonathandale/.ssh/sops/age/key.txt'
+export SOPS_AGE_KEY_FILE=~/.config/sops/age/key.txt
+
+
+## completion
+#source ~/.completion/*
+source <(kubectl completion zsh)
+source <(helm completion zsh)
+source <(k3d completion zsh)
+
+## terraform completion
+complete -o nospace -C /opt/homebrew/bin/terraform terraform
+
+## Helm completion
+## Generate helm completion into the first fpath entry's _helm file. Fixed missing brace/quote.
+helm completion zsh > "${fpath[1]}/_helm"
+
+## sops completion
+command -v sops >/dev/null && source <(sops completion zsh)
+
+## add bin directory to my path
+export PATH=$PATH:~/bin
+
+
+## add ssh agent
+# ssh-add
+# ssh-add -lq
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+## git log --show-signature -1
+## Check for "Hidden" Error Messages - "error: gpg.ssh.allowedSignersFile needs to be configured..."
+##
+## To fix above error message, tell git to trust your own key only run one time to sign git commits
+#  touch ~/.ssh/allowed_signers
+#  echo "$(git config user.email) namespaces=\"git\" $(cat ~/.ssh/id_ed25519.pub)" >> ~/.ssh/allowed_signers
+#  git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+## Test again: git log --show-signature -1
+# To see if the signature exists independently of the verification logic, run:
+# git show --pretty=raw -1
+
+
+## openssl
+export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
+
+## VS code
+export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+## Postgres
+export PATH=$PATH:/opt/homebrew/opt/postgresql@17/bin
+
+## shasum256, either one of these work https://unix.stackexchange.com/a/426838
+function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; } 
+## function sha256sum() { shasum -a 256 "$@" ; } && export -f sha256sum
+
+### pip zsh completion start
+#compdef -P pip[0-9.]#
+__pip() {
+  compadd $( COMP_WORDS="$words[*]" \
+             COMP_CWORD=$((CURRENT-1)) \
+             PIP_AUTO_COMPLETE=1 $words[1] 2>/dev/null )
+}
+if [[ $zsh_eval_context[-1] == loadautofunc ]]; then
+  # autoload from fpath, call function directly
+  __pip "$@"
+else
+  # eval/source/. command, register function for later
+  compdef __pip -P 'pip[0-9.]#'
+fi
+### pip zsh completion end
+
+
+## >>> conda initialize >>>
+## !! Contents within this block are managed by 'conda init' !!
+#__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+#if [ $? -eq 0 ]; then
+#    eval "$__conda_setup"
+#else
+#    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+#        . "/opt/anaconda3/etc/profile.d/conda.sh"
+#    else
+#        export PATH="/opt/anaconda3/bin:$PATH"
+#    fi
+#fi
+#unset __conda_setup
+## <<< conda initialize <<<
+#
+
+
+# Rancher Desktop bundles its own version of the helm binary.
+# You cannot typically update just this binary independently because it is tied to the Rancher Desktop release version.
+# Override the rancher desktop helm version, ensure its location comes before the Rancher Desktop path (~/.rd/bin)
+export PATH="/opt/homebrew/bin/:$PATH"
 
 ############################
 # History file configuration
@@ -66,67 +189,8 @@ HISTORY_IGNORE="(ls|cd|pwd|exit|cd)*"
 ## setopt HIST_NO_STORE         # Don't store history commands
 ## setopt HIST_REDUCE_BLANKS    # Remove superfluous blanks from each command line being added to the history.
 
-export GPG_TTY=$(tty)
-
-## completion
-#source ~/.completion/*
-source <(kubectl completion zsh)
-source <(helm completion zsh)
-source <(k3d completion zsh)
-
-complete -o nospace -C /opt/homebrew/bin/terraform terraform
-
-# Generate helm completion into the first fpath entry's _helm file. Fixed missing brace/quote.
-helm completion zsh > "${fpath[1]}/_helm"
-
-## add bin directory to my path
-export PATH=$PATH:~/bin
-
-## add ssh agent
-# ssh-add
-# ssh-add -lq
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-
-## git log --show-signature -1
-## Check for "Hidden" Error Messages - "error: gpg.ssh.allowedSignersFile needs to be configured..."
-##
-## To fix above error message, tell git to trust your own key only run one time to sign git commits
-#  touch ~/.ssh/allowed_signers
-#  echo "$(git config user.email) namespaces=\"git\" $(cat ~/.ssh/id_ed25519.pub)" >> ~/.ssh/allowed_signers
-#  git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-## Test again: git log --show-signature -1
-# To see if the signature exists independently of the verification logic, run:
-# git show --pretty=raw -1
+############################
+# END History configuration
+############################
 
 
-# openssl
-export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
-
-## VS code
-export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
-
-## Postgres
-export PATH=$PATH:/opt/homebrew/opt/postgresql@17/bin
-
-## shasum256, either one of these work https://unix.stackexchange.com/a/426838
-function sha256sum() { openssl sha256 "$@" | awk '{print $2}'; } 
-## function sha256sum() { shasum -a 256 "$@" ; } && export -f sha256sum
-
-
-
-## >>> conda initialize >>>
-## !! Contents within this block are managed by 'conda init' !!
-#__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-#if [ $? -eq 0 ]; then
-#    eval "$__conda_setup"
-#else
-#    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
-#        . "/opt/anaconda3/etc/profile.d/conda.sh"
-#    else
-#        export PATH="/opt/anaconda3/bin:$PATH"
-#    fi
-#fi
-#unset __conda_setup
-## <<< conda initialize <<<
-#
