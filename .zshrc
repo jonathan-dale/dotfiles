@@ -36,6 +36,11 @@ source $ZSH/oh-my-zsh.sh
 # https://github.com/junegunn/fzf
 # brew install fzf
 
+# Age key configuration
+# Create the directory if it doesn't exist, and generate the key pair
+##mkdir -p ~/.config/sops/age
+##age-keygen -o ~/.config/sops/age/key.txt
+
 #####################
 #####################
 #
@@ -74,11 +79,11 @@ export GPG_TTY=$(tty)
 
 
 ## age
-#export SOPS_AGE_KEY_FILE='/Users/jonathandale/.ssh/sops/age/key.txt'
 export SOPS_AGE_KEY_FILE=~/.config/sops/age/key.txt
 
-
+##############
 ## completion
+##############
 #source ~/.completion/*
 source <(kubectl completion zsh)
 source <(helm completion zsh)
@@ -94,13 +99,17 @@ helm completion zsh > "${fpath[1]}/_helm"
 ## sops completion
 command -v sops >/dev/null && source <(sops completion zsh)
 
+##############
+## /completion
+##############
+
+
 ## add bin directory to my path
 export PATH=$PATH:~/bin
+export PATH=$PATH:~/.local/bin/
 
 
 ## add ssh agent
-# ssh-add
-# ssh-add -lq
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 
@@ -145,22 +154,6 @@ else
 fi
 ### pip zsh completion end
 
-
-## >>> conda initialize >>>
-## !! Contents within this block are managed by 'conda init' !!
-#__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-#if [ $? -eq 0 ]; then
-#    eval "$__conda_setup"
-#else
-#    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
-#        . "/opt/anaconda3/etc/profile.d/conda.sh"
-#    else
-#        export PATH="/opt/anaconda3/bin:$PATH"
-#    fi
-#fi
-#unset __conda_setup
-## <<< conda initialize <<<
-#
 
 
 # Rancher Desktop bundles its own version of the helm binary.
