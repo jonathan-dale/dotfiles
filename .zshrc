@@ -54,7 +54,7 @@ alias k=kubectl
 alias ktx=kubectx
 alias kns=kubens
 #alias python=python3
-alias docker=nerdctl
+# alias docker=nerdctl
 alias random="openssl rand -base64 20 | sed -E 's/(.)\1+/\1/g'"
 
 
@@ -62,11 +62,12 @@ alias random="openssl rand -base64 20 | sed -E 's/(.)\1+/\1/g'"
 # echo "----- neofetch -----"
 # neofetch
 
-
+## You can install many versions of kubectl: `brew install kubernetes-cli@1.35`
 ## Switch between kubectl versions using brew (make sure Rancher Desktop's path wrapper in disabled)
 alias use-kube134="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.34 && kubectl version --client"
 alias use-kube135="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.35 && kubectl version --client"
 alias use-kube136="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.36 && kubectl version --client"
+alias use-kube137="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.37 && kubectl version --client"
 
 
 ## uv
@@ -98,6 +99,9 @@ helm completion zsh > "${fpath[1]}/_helm"
 
 ## sops completion
 command -v sops >/dev/null && source <(sops completion zsh)
+
+## astro completion
+astro_cli_installed=$(which astro) && source <(astro completion zsh)
 
 ##############
 ## /completion
