@@ -13,6 +13,7 @@ plugins=(
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
+  terragrunt
 )
 
 # syntax highlighting
@@ -21,6 +22,10 @@ source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # auto suggest
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZHS_AUTOSUGGEST_HIGHLIGHT_STYLE="fg-9"
+
+# terragrunt
+# If you add terragtunt to the plugins list:
+# git clone https://github.com/jkavan/terragrunt-oh-my-zsh-plugin ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/terragrunt
 
 
 source $ZSH/oh-my-zsh.sh
