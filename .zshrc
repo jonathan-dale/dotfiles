@@ -10,18 +10,16 @@ ZSH_THEME="robbyrussell"
 # Add wisely, as too many plugins slow down shell startup.
 ###  plugins=(git asdf aws szh-autosuggestions)
 plugins=(
+  aws
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
   terragrunt
 )
 
-# syntax highlighting
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
 # auto suggest
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-ZHS_AUTOSUGGEST_HIGHLIGHT_STYLE="fg-9"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=9"
 
 # terragrunt
 # If you add terragtunt to the plugins list:
@@ -30,6 +28,8 @@ ZHS_AUTOSUGGEST_HIGHLIGHT_STYLE="fg-9"
 
 source $ZSH/oh-my-zsh.sh
 
+# Path Entries are added repeatedly, so duplicates pile up.
+typeset -U path PATH
 
 ### Important:
 ### Enable mouse scrolling in iterm
@@ -43,8 +43,8 @@ source $ZSH/oh-my-zsh.sh
 
 # Age key configuration
 # Create the directory if it doesn't exist, and generate the key pair
-##mkdir -p ~/.config/sops/age
-##age-keygen -o ~/.config/sops/age/key.txt
+## mkdir -p ~/.config/sops/age
+## age-keygen -o ~/.config/sops/age/key.txt
 
 #####################
 #####################
@@ -58,8 +58,6 @@ alias c=clear
 alias k=kubectl
 alias ktx=kubectx
 alias kns=kubens
-#alias python=python3
-# alias docker=nerdctl
 alias random="openssl rand -base64 20 | sed -E 's/(.)\1+/\1/g'"
 
 
@@ -75,14 +73,8 @@ alias use-kube136="brew unlink kubernetes-cli && brew link --overwrite kubernete
 alias use-kube137="brew unlink kubernetes-cli && brew link --overwrite kubernetes-cli@1.37 && kubectl version --client"
 
 
-## uv
-export PATH="~/.local/bin:$PATH"
-eval "$(uv generate-shell-completion zsh)"
-
-
 ## GPG
-export GPG_TTY=$(tty)
-
+export GPG_TTY=$TTY
 
 ## age
 export SOPS_AGE_KEY_FILE=~/.config/sops/age/key.txt
@@ -90,37 +82,36 @@ export SOPS_AGE_KEY_FILE=~/.config/sops/age/key.txt
 ##############
 ## completion
 ##############
-#source ~/.completion/*
-source <(kubectl completion zsh)
-source <(helm completion zsh)
-source <(k3d completion zsh)
+## For each installed tool: generate ~/.completion/<tool>.zsh if missing, then source them all with (N) so an empty directory doesn't cause an error.
+## To refresh after upgrading a tool: rm ~/.completion/<tool>.zsh
+mkdir -p ~/.completion
+for tool in kubectl helm k3d sops astro uv; do
+  command -v $tool >/dev/null || continue
+  [[ -f ~/.completion/$tool.zsh ]] && continue
+  ## uv uses a different subcommand than the other tools
+  if [[ $tool == uv ]]; then
+    uv generate-shell-completion zsh > ~/.completion/uv.zsh || rm -f ~/.completion/uv.zsh
+  else
+    $tool completion zsh > ~/.completion/$tool.zsh || rm -f ~/.completion/$tool.zsh
+  fi
+done
+for f in ~/.completion/*.zsh(N); do source $f; done
 
-## terraform completion
+## terraform uses bash-style completion (no generated file)
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
-
-## Helm completion
-## Generate helm completion into the first fpath entry's _helm file. Fixed missing brace/quote.
-helm completion zsh > "${fpath[1]}/_helm"
-
-## sops completion
-command -v sops >/dev/null && source <(sops completion zsh)
-
-## astro completion
-astro_cli_installed=$(which astro) && source <(astro completion zsh)
-
 ##############
 ## /completion
 ##############
 
 
 ## add bin directory to my path
-export PATH=$PATH:~/bin
-export PATH=$PATH:~/.local/bin/
+export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$HOME/.local/bin/
 
 
-## add ssh agent
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
+## ssh-agent: use macOS's built-in agent (ssh-add --apple-use-keychain ~/.ssh/id_ed25519, or AddKeysToAgent yes in ~/.ssh/config)
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+
 
 ## git log --show-signature -1
 ## Check for "Hidden" Error Messages - "error: gpg.ssh.allowedSignersFile needs to be configured..."
@@ -135,7 +126,7 @@ ssh-add ~/.ssh/id_ed25519
 
 
 ## openssl
-export PATH="${homebrewPrefix}/opt/openssl/bin:$PATH"
+export PATH="/opt/homebrew/opt/openssl/bin:$PATH"
 
 ## VS code
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
@@ -164,10 +155,6 @@ fi
 ### pip zsh completion end
 
 
-
-# Rancher Desktop bundles its own version of the helm binary.
-# You cannot typically update just this binary independently because it is tied to the Rancher Desktop release version.
-# Override the rancher desktop helm version, ensure its location comes before the Rancher Desktop path (~/.rd/bin)
 export PATH="/opt/homebrew/bin/:$PATH"
 
 ############################
@@ -200,4 +187,8 @@ HISTORY_IGNORE="(ls|cd|pwd|exit|cd)*"
 # END History configuration
 ############################
 
+
+# Syntax Highlighting: it should be sourced after oh-my-zsh.sh, but before the prompt is set.
+# It is important to source it last, so that it can override any other settings.
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
