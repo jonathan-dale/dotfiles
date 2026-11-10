@@ -48,11 +48,11 @@ EOF
 
 install 1password yes
 install iterm2 yes
-install jetbrains-toolbox yes
-install markdownlint-cli2
-install nvm
-install rbenv
-install ruby-install
+# install jetbrains-toolbox yes
+# install markdownlint-cli2
+# install nvm
+# install rbenv
+# install ruby-install
 install zsh
 
 
