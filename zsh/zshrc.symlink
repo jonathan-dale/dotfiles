@@ -3,7 +3,7 @@ ZSH_THEME="robbyrussell"
 ## ZSH_THEME="bira"
 ## ZSH_THEME="candy"
 
-# Which plugins would you like to load?
+# Which oh-my-zsh plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
@@ -12,8 +12,6 @@ ZSH_THEME="robbyrussell"
 plugins=(
   aws
   git
-  zsh-autosuggestions
-  zsh-syntax-highlighting
   terragrunt
 )
 
@@ -21,9 +19,7 @@ plugins=(
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=9"
 
-# terragrunt
-# If you add terragtunt to the plugins list:
-# git clone https://github.com/jkavan/terragrunt-oh-my-zsh-plugin ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/terragrunt
+# terragrunt plugin is cloned into $ZSH_CUSTOM/plugins by zsh/install.sh
 
 
 source $ZSH/oh-my-zsh.sh
@@ -104,8 +100,9 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 ##############
 
 
-## add bin directory to my path
+## add bin directories to my path
 export PATH=$PATH:$HOME/bin
+export PATH=$PATH:$HOME/.dotfiles/bin
 export PATH=$PATH:$HOME/.local/bin/
 
 
