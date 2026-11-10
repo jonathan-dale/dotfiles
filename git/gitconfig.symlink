@@ -1,9 +1,3 @@
-[include]
-  path = ~/.gitconfig.local
-
-[alias]
-  cfp = !git commit -am \"fix\" && git push
-
 [push]
   autosetupremote = true
   default = simple
@@ -41,9 +35,20 @@
 [core]
   fsmonitor = true
   untrackedcache = true
-[credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+
+[merge]
+  conflictstyle = zdiff3
+
+[rerere]
+  enabled = true
+
+[rebase]
+  autosquash = true
+  updateRefs = true
+
+[commit]
+  verbose = true
+
+# Keep last: values in the machine-specific file override everything above.
+[include]
+  path = ~/.gitconfig.local

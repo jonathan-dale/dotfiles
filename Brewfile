@@ -52,6 +52,8 @@ brew "tig"
 brew "uv"
 # Executes a program periodically, showing output fullscreen
 brew "watch"
+# GitHub command-line tool (also the https credential helper, see git/gitconfig.local.symlink.template)
+brew "gh"
 # Fish-like fast/unobtrusive autosuggestions for zsh
 brew "zsh-autosuggestions"
 # Fish shell like syntax highlighting for zsh
