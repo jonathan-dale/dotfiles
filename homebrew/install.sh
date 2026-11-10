@@ -1,78 +1,60 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # Homebrew
 #
-# This installs some of the common dependencies needed (or at least desired)
-# using Homebrew.
+# Installs Homebrew itself plus a few essentials.
+#
+# The full set of tools lives in the Brewfile and is applied out of band, see
+# "Brewfile" in the README.
 
-# Check for Homebrew
-if test ! $(which brew)
-then
-  echo "  Installing Homebrew for you."
-
-  # Install the correct homebrew for each OS type
-  if test "$(uname)" = "Darwin"
-  then
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  elif test "$(expr substr $(uname -s) 1 5)" = "Linux"
-  then
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
-  fi
-
-fi
-
-function install() {
-  app=$1
-  cask=${2:-}
-
-cat << EOF
-
--> Installing ${app}...
-EOF
-
-  if [[ x"$OS" == x"Windows" ]]; then
-    scoop install ${app}
-  else
-    if [[ ! "$cask" ]]; then
-      brew list ${app} >/dev/null || brew install ${app}
-    else
-      brew list ${app} --cask >/dev/null || brew install ${app} --cask
+# Find an existing Homebrew and put it on PATH for the rest of this script.
+# (Apple Silicon, Intel macOS, Linux)
+load_brew () {
+  local b
+  for b in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+    if [ -x "$b" ]; then
+      eval "$("$b" shellenv)"
+      return 0
     fi
-  fi
-
-cat << EOF
-
--> ${app} installed
-EOF
+  done
+  return 1
 }
 
-install 1password yes
-install iterm2 yes
-# install jetbrains-toolbox yes
-# install markdownlint-cli2
-# install nvm
-# install rbenv
-# install ruby-install
+if ! command -v brew >/dev/null 2>&1 && ! load_brew
+then
+  echo "  Installing Homebrew for you."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || exit 1
+  load_brew || { echo "  Homebrew installed but brew was not found"; exit 1; }
+fi
+
+# install <name> [cask] [app-bundle]
+#   cask:       "yes" to install as a cask
+#   app-bundle: for casks, the .app name in /Applications. If it's already there
+#               (e.g. installed by hand) brew would refuse, so skip it.
+install() {
+  local app=$1 cask=${2:-} bundle=${3:-}
+
+  echo
+  echo "-> Installing ${app}..."
+
+  if [ -z "$cask" ]; then
+    brew list "${app}" >/dev/null 2>&1 || brew install "${app}"
+  elif brew list --cask "${app}" >/dev/null 2>&1; then
+    :
+  elif [ -n "$bundle" ] && [ -d "/Applications/${bundle}" ]; then
+    echo "   ${bundle} already exists in /Applications, skipping."
+    return 0
+  else
+    brew install --cask "${app}"
+  fi
+
+  echo
+  echo "-> ${app} installed"
+}
+
+install iterm2 yes iTerm.app
 install zsh
 
-
-# # Install Rust
-# if test ! $(which rustup)
-# then
-#   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-# fi
-
-# # You may need to run these commands for ruby-installer to work.
-# # export PATH="/opt/homebrew/opt/openssl@1.1/bin:$PATH"
-# # export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@1.1/lib/pkgconfig"
-# # export LDFLAGS="-L/opt/homebrew/opt/openssl@1.1/lib"
-# # export CPPFLAGS="-I/opt/homebrew/opt/openssl@1.1/include"
-# ruby-install ruby 3.1.3
-# gem install jekyll --user-install
-
-# curl https://pyenv.run | bash
-
 brew cleanup
-rm -f -r /Library/Caches/Homebrew/*
 
 exit 0

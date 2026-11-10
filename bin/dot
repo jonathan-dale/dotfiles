@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # dot
 #
@@ -40,15 +40,18 @@ while test $# -gt 0; do
 	shift
 done
 
-export ZSH=$HOME/dotfiles
+# All paths are relative to wherever the repo is checked out
+# (~/.dotfiles, ~/repos/..., etc.), so moving the directory is safe.
 
 # Set macOS defaults
-$ZSH/macos/set-defaults.sh
+"$dotfilesDirectory/macos/set-defaults.sh"
 
-# Upgrade homebrew
-echo "› brew update"
-brew update
+# Upgrade homebrew (on a brand new machine homebrew/install.sh installs it below)
+if command -v brew >/dev/null 2>&1; then
+	echo "› brew update"
+	brew update
+fi
 
 # Install software
-echo "› $ZSH/script/install"
-$ZSH/script/install
+echo "› $dotfilesDirectory/script/install"
+"$dotfilesDirectory/script/install"

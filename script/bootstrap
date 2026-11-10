@@ -2,11 +2,11 @@
 #
 # bootstrap installs things.
 
-# Make sure .sh files are executable.
-find . -type f -iname "*" -exec chmod +x {} \;
-
 cd "$(dirname "$0")/.."
 DOTFILES_ROOT=$(pwd -P)
+
+# Make sure scripts are executable (never touch .git).
+find . -path ./.git -prune -o -type f \( -name "*.sh" -o -path "./script/*" -o -path "./bin/*" \) -exec chmod +x {} +
 
 set -e
 
@@ -27,7 +27,19 @@ success () {
 fail () {
   printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
   echo ''
-  exit
+  exit 1
+}
+
+# Escape a value for use as a sed replacement with | as the delimiter.
+sed_escape () {
+  printf '%s' "$1" | sed -e 's/[\\|&]/\\&/g'
+}
+
+# Prompt with an editable default. (bash 3.2 on macOS has no `read -i`.)
+prompt_default () {
+  local prompt=$1 default=$2 reply
+  read -r -p "  [ ?? ] $prompt [$default]: " reply
+  printf '%s' "${reply:-$default}"
 }
 
 setup_gitconfig () {
@@ -41,41 +53,43 @@ setup_gitconfig () {
       git_credential='osxkeychain'
     fi
 
-    # Try to get existing git config values
+    # Reuse values from an existing ~/.gitconfig when there are any
     git_authorname=$(git config --get user.name 2>/dev/null || echo "")
     git_authoremail=$(git config --get user.email 2>/dev/null || echo "")
     git_signingkey=$(git config --get user.signingkey 2>/dev/null || echo "")
 
-    # Prompt for author name if not already set
     if [ -z "$git_authorname" ]; then
-      user ' - What is your github author name?'
-      read -e -i "pauldambra" git_authorname
+      git_authorname=$(prompt_default 'What is your github author name?' 'jonathan-dale')
     else
       info "Using existing git author name: $git_authorname"
     fi
 
-    # Prompt for author email if not already set
     if [ -z "$git_authoremail" ]; then
-      user ' - What is your github author email?'
-      read -e -i "paul.dambra@gmail.com" git_authoremail
+      git_authoremail=$(prompt_default 'What is your github author email?' 'jonathan.dale@gmail.com')
     else
       info "Using existing git author email: $git_authoremail"
     fi
 
-    # Prompt for signing key if not already set
     if [ -z "$git_signingkey" ]; then
-      user ' - What is your git signing key? (leave empty to skip)'
-      read -e git_signingkey
+      read -r -p '  [ ?? ] Git signing key (path to ssh key, e.g. ~/.ssh/id_ed25519; empty to skip): ' git_signingkey
     else
-      info "Using existing git signing key"
+      info "Using existing git signing key: $git_signingkey"
     fi
 
+    # Fill in the template. With no signing key, drop the whole signing block
+    # (otherwise commit.gpgsign=true would make every commit fail).
     if [ -z "$git_signingkey" ]; then
-      # Remove signing key lines if not provided
-      sed -e "s/AUTHORNAME/$git_authorname/g" -e "s/AUTHOREMAIL/$git_authoremail/g" -e "s/GIT_CREDENTIAL_HELPER/$git_credential/g" -e "/signingkey/d" git/gitconfig.local.symlink.template > git/gitconfig.local.symlink
+      signing_filter='/# SIGNING-START/,/# SIGNING-END/d'
     else
-      sed -e "s/AUTHORNAME/$git_authorname/g" -e "s/AUTHOREMAIL/$git_authoremail/g" -e "s/GIT_CREDENTIAL_HELPER/$git_credential/g" -e "s|SIGNINGKEY|$git_signingkey|g" git/gitconfig.local.symlink.template > git/gitconfig.local.symlink
+      signing_filter='/# SIGNING-\(START\|END\)/d'
     fi
+
+    sed -e "$signing_filter" \
+        -e "s|AUTHORNAME|$(sed_escape "$git_authorname")|g" \
+        -e "s|AUTHOREMAIL|$(sed_escape "$git_authoremail")|g" \
+        -e "s|GIT_CREDENTIAL_HELPER|$(sed_escape "$git_credential")|g" \
+        -e "s|SIGNINGKEY|$(sed_escape "$git_signingkey")|g" \
+        git/gitconfig.local.symlink.template > git/gitconfig.local.symlink
 
     success 'gitconfig'
   fi
@@ -86,6 +100,13 @@ link_file () {
 
   local overwrite= backup= skip=
   local action=
+
+  # A symlink whose target no longer exists (e.g. the repo was moved) is safe to replace.
+  if [ -L "$dst" ] && [ ! -e "$dst" ]
+  then
+    rm "$dst"
+    success "removed broken symlink $dst"
+  fi
 
   if [ -f "$dst" -o -d "$dst" -o -L "$dst" ]
   then
@@ -171,19 +192,6 @@ install_dotfiles () {
 setup_gitconfig
 install_dotfiles
 
-# Run all install scripts
-info 'running install scripts'
-for installer in $(find "$DOTFILES_ROOT" -maxdepth 2 -name 'install' -not -path '*.git*' -type f); do
-  if [ -x "$installer" ]; then
-    info "running $(basename $(dirname "$installer"))/install"
-    if sh -c "$installer"; then
-      success "$(basename $(dirname "$installer"))/install completed"
-    else
-      fail "$(basename $(dirname "$installer"))/install failed"
-    fi
-  fi
-done
-
 # Copy configuration files to home directory
 info 'copying configuration files'
 if [ -f "$DOTFILES_ROOT/.markdownlint.json" ]; then
@@ -191,15 +199,24 @@ if [ -f "$DOTFILES_ROOT/.markdownlint.json" ]; then
   success 'copied .markdownlint.json to home directory'
 fi
 
-# If we're on a Mac, let's install and setup homebrew.
 if [ "$(uname -s)" == "Darwin" ]
 then
+  # bin/dot sets macOS defaults, updates Homebrew and runs script/install
+  # (which runs every */install.sh), so there is no separate install loop here.
   info "installing dependencies"
-  if source bin/dot | while read -r data; do info "$data"; done
+  if "$DOTFILES_ROOT/bin/dot"
   then
     success "dependencies installed"
   else
     fail "error installing dependencies"
+  fi
+else
+  info 'running install scripts'
+  if "$DOTFILES_ROOT/script/install"
+  then
+    success "install scripts completed"
+  else
+    fail "install scripts failed"
   fi
 fi
 
