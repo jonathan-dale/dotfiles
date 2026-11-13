@@ -1,0 +1,100 @@
+
+
+GIT_REPOS_ROOT="${GIT_REPOS_ROOT:-$HOME/repos}"
+GIT_BRANCH_MAX_AGE_DAYS="${GIT_BRANCH_MAX_AGE_DAYS:-30}"
+GIT_CLEANUP_DRY_RUN="${GIT_CLEANUP_DRY_RUN:-true}"
+
+cleanup_git_branches() {
+    local git_path repo default_ref default_branch branches
+    local branch timestamp in_use cutoff failed=0
+
+    if ! [[ "$GIT_BRANCH_MAX_AGE_DAYS" =~ ^[1-9][0-9]{0,3}$ ]]; then
+        log_message "Invalid GIT_BRANCH_MAX_AGE_DAYS: use 1-9999"
+        return 1
+    fi
+    case "$GIT_CLEANUP_DRY_RUN" in
+        true|false) ;;
+        *) log_message "GIT_CLEANUP_DRY_RUN must be true or false"; return 1 ;;
+    esac
+    cutoff=$(( $(date +%s) - GIT_BRANCH_MAX_AGE_DAYS * 86400 ))
+
+    while IFS= read -r -d '' git_path; do
+        repo="${git_path%/.git}"
+        if ! git -C "$repo" rev-parse --git-dir >/dev/null 2>&1; then
+            continue
+        fi
+        if ! git -C "$repo" remote get-url origin >/dev/null 2>&1; then
+            log_message "Skipping $repo: no origin remote"
+            continue
+        fi
+
+        log_message "Git cleanup in $repo"
+
+        # Explicit branch-only mapping avoids pruning tags or local branches,
+        # even if the repository has custom fetch/prune configuration.
+        if ! GIT_TERMINAL_PROMPT=0 git -C "$repo" fetch \
+            --prune --no-prune-tags --no-tags --refmap= origin \
+            '+refs/heads/*:refs/remotes/origin/*' >>"$LOG_FILE" 2>&1; then
+            log_message "Skipping $repo: fetch/prune failed; see cleanup log"
+            failed=1
+            continue
+        fi
+
+        # Refresh origin/HEAD rather than assuming the default is main/master.
+        if ! GIT_TERMINAL_PROMPT=0 git -C "$repo" remote set-head origin --auto \
+            >>"$LOG_FILE" 2>&1; then
+            log_message "Skipping $repo: cannot determine origin's default branch"
+            failed=1
+            continue
+        fi
+        if ! default_ref=$(git -C "$repo" symbolic-ref --quiet \
+            refs/remotes/origin/HEAD); then
+            log_message "Skipping $repo: origin/HEAD is unavailable"
+            failed=1
+            continue
+        fi
+        default_branch="${default_ref#refs/remotes/origin/}"
+
+        # Structured equivalent of git branch -vv --merged <default>.
+        # Branch names cannot contain spaces; the last field is a boolean marker.
+        if ! branches=$(git -C "$repo" for-each-ref \
+            --merged="$default_ref" \
+            --format='%(refname:lstrip=2) %(committerdate:unix) %(if)%(worktreepath)%(then)in-use%(end)' \
+            refs/heads/ 2>>"$LOG_FILE"); then
+            log_message "Skipping $repo: could not list merged branches"
+            failed=1
+            continue
+        fi
+
+        while IFS=' ' read -r branch timestamp in_use; do
+            [ -n "$branch" ] || continue
+            [ "$branch" != "$default_branch" ] || continue
+            [ -z "$in_use" ] || continue
+
+            # Extend this list for other long-lived branches you want to keep.
+            case "$branch" in
+                main|master|develop|development|dev|staging|production|release|release/*)
+                    continue ;;
+            esac
+            [ "$timestamp" -lt "$cutoff" ] || continue
+
+            if [ "$GIT_CLEANUP_DRY_RUN" = true ]; then
+                log_message "Would delete local branch: $repo -> $branch (merged into $default_ref)"
+            elif git -C "$repo" branch -d -- "$branch" >>"$LOG_FILE" 2>&1; then
+                log_message "Deleted local branch: $repo -> $branch"
+            else
+                # Never force deletion if Git's additional safety check refuses.
+                log_message "Kept $repo -> $branch: git branch -d refused; see cleanup log"
+                failed=1
+            fi
+        done <<< "$branches"
+    done < <(find "$GIT_REPOS_ROOT" -name .git \( -type d -o -type f \) \
+        -prune -print0 2>>"$LOG_FILE")
+
+    return "$failed"
+}
+
+if command -v git >/dev/null 2>&1 && [ -d "$GIT_REPOS_ROOT" ]; then
+    run_cleanup "Git merged-branch cleanup (local deletion dry-run: $GIT_CLEANUP_DRY_RUN)" \
+        "cleanup_git_branches"
+fi

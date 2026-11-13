@@ -1,0 +1,54 @@
+[push]
+  autosetupremote = true
+  default = simple
+  followtags = true
+
+[pull]
+  rebase = false
+
+[column]
+  ui = auto
+
+[branch]
+  sort = -committerdate
+
+[tag]
+  sort = version:refname
+
+[init]
+  defaultbranch = main
+
+[diff]
+  algorithm = histogram
+  colormoved = plain
+  mnemonicprefix = true
+  renames = true
+
+[fetch]
+  prune = true
+  prunetags = true
+  all = true
+
+[help]
+  autocorrect = prompt
+
+[core]
+  fsmonitor = true
+  untrackedcache = true
+
+[merge]
+  conflictstyle = zdiff3
+
+[rerere]
+  enabled = true
+
+[rebase]
+  autosquash = true
+  updateRefs = true
+
+[commit]
+  verbose = true
+
+# Keep last: values in the machine-specific file override everything above.
+[include]
+  path = ~/.gitconfig.local
