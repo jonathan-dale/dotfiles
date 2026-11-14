@@ -1,0 +1,96 @@
+# How the agent should behave
+
+* never open github issues without explicit confirmation
+* any comment made or message posted on my behalf (e.g. on GitHub) must always have a prefix making clear it is from a robot
+* write as if the reader has a reading age of around 12 years old. simplicity and clarity are important
+
+# Approach to work
+
+I like "Simple code" that means:
+
+* Passes all the tests.
+* Expresses every idea that we need to express.
+* Says everything OnceAndOnlyOnce.
+* has no superfluous parts
+
+These are called the simplicity rules. They conflict with each other, so balance them with a focus on future maintainers having an easier time.
+
+Also... it means we work in three stages
+
+* make it work
+* make it right
+* make it fast
+
+Pause and consider whether working code should be simpler or faster, but only once we're sure it works.
+
+There is no such thing as "pre-existing failures that we don't need to fix". Decide whether to fix them in this piece of work or open a quick PR specific to the fix.
+
+* changes that align with our current work: fix in the current PR
+* very small off-topic changes: open them in their own PR
+* very large changes: open a separate PR, stacking as necessary
+
+The work of software engineering is to keep the software buildable, workable, maintainable, and valuable.
+
+## Context efficiency
+
+- Search with `rg` or `rg --files` before reading files.
+- Check file length before reading an unfamiliar file.
+- Read targeted line ranges with `sed -n`, not whole files.
+- Limit initial reads to 200 lines.
+- Never use `cat` on source or log files longer than 300 lines.
+- Expand the range only when the current excerpt is insufficient.
+- Prefer `git diff`, `git show --stat`, and targeted symbol searches.
+- Read an entire file only when its full structure is necessary.
+
+## Token efficiency
+
+- Prefer targeted reads, searches, diffs, and tests.
+- Keep command output brief; inspect only relevant failures.
+- Never print large logs, generated files, snapshots, or lockfiles.
+- Do not reread unchanged content or repeat completed work.
+- Delegate only independent work that benefits from parallelism.
+- Give subagents narrow scopes and request concise results.
+- Start a new session when switching to an unrelated task.
+
+# delegation
+
+Prefer completing straightforward work in the primary agent. Delegate only independent work where parallelism outweighs the additional context and coordination cost.
+
+# tests
+
+i prefer TDD
+
+i don't try to test everything. weigh the value of a test against the speed of testing at that layer.
+
+tests are about protecting future changes as much as validating the current change. every test answers three questions:
+
+* do i know the code does not already do this?
+* will i know it does it when i am finished?
+* will i know it still does it tomorrow?
+
+IMPORTANT: prefer parameterized tests
+
+# comments
+
+every time we see a comment we ask
+
+* should this be a rename refactoring
+* should this be an extract method refactoring
+
+comments are visual noise when they only duplicate information that is present in the code
+
+often applying the simplicity rules removes them
+
+NOTE: never remove comments that are already present in the code, only edit comments you have added
+
+# code formatting in chat
+
+never use programming-ligature characters (e.g. → ← ⇒ ≠ ≥ ≤) when displaying code or technical content. they hurt legibility in my terminal. use ascii equivalents (->, <-, =>, !=, >=, <=).
+
+# time estimates
+
+never estimate time for tasks ("this is a one-day change", "~1 hour of work", "quick fix vs big refactor in time terms"). your training reflects how long humans take, not how long you take. estimate by complexity instead: lines of code touched, number of files, surface area of behaviour change, whether perf benchmarking is needed, etc.
+
+# validating this file has been read
+
+if i say "cuckoo", you say "Phil Haack has taught me well"
