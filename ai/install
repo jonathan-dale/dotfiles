@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+#
+# Install AI configuration files
+
+cd "$(dirname "$0")"
+AI_DIR=$(pwd -P)
+
+instructions_source="$AI_DIR/AGENTS.md"
+legacy_target="$HOME/CLAUDE.md"
+
+if [ -L "$legacy_target" ]; then
+  rm "$legacy_target"
+  echo "Removed legacy symlink: $legacy_target"
+fi
+
+link_instructions() {
+  target="$1"
+  mkdir -p "$(dirname "$target")"
+
+  if [ -L "$target" ]; then
+    rm "$target"
+    echo "Removed existing symlink: $target"
+  fi
+
+  if [ -e "$target" ]; then
+    echo "Warning: $target exists and is not a symlink. Skipping."
+  else
+    ln -s "$instructions_source" "$target"
+    echo "Linked AGENTS.md to $target"
+  fi
+}
+
+# Claude Code reads $HOME/AGENTS.md. Tools that scan ~/.agents need their own
+# copy there. Claude Code does not read ~/.agents, so the instructions cannot
+# load twice.
+link_instructions "$HOME/AGENTS.md"
+link_instructions "$HOME/.agents/AGENTS.md"
+
+CLAUDE_SKILLS_DIR="$HOME/.claude/skills"
+mkdir -p "$CLAUDE_SKILLS_DIR"
+
+for skill_dir in "$AI_DIR"/skills/*; do
+  if [ -d "$skill_dir" ] && [ -f "$skill_dir/SKILL.md" ]; then
+    skill_name=$(basename "$skill_dir")
+    target="$CLAUDE_SKILLS_DIR/$skill_name"
+
+    if [ -L "$target" ] || [ -e "$target" ]; then
+      rm -rf "$target"
+      echo "Removed existing skill link: $target"
+    fi
+
+    ln -s "$skill_dir" "$target"
+    echo "Linked skill $skill_name to $target"
+  fi
+done
+
+CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
+mkdir -p "$CLAUDE_COMMANDS_DIR"
+
+for cmd_file in "$AI_DIR"/commands/*.md; do
+  if [ -f "$cmd_file" ]; then
+    cmd_name=$(basename "$cmd_file")
+    target="$CLAUDE_COMMANDS_DIR/$cmd_name"
+
+    if [ -L "$target" ] || [ -e "$target" ]; then
+      rm -rf "$target"
+      echo "Removed existing command link: $target"
+    fi
+
+    ln -s "$cmd_file" "$target"
+    echo "Linked command $cmd_name to $target"
+  fi
+done
