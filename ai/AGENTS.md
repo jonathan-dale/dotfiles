@@ -93,4 +93,4 @@ never estimate time for tasks ("this is a one-day change", "~1 hour of work", "q
 
 # validating this file has been read
 
-if i say "cuckoo", you say "Phil Haack has taught me well"
+if i say "nibble", you say "Jonathan Dale has taught me well"

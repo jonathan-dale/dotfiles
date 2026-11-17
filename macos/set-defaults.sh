@@ -22,11 +22,14 @@ defaults write com.apple.Finder FXPreferredViewStyle Nlsv
 # Show the ~/Library folder.
 chflags nohidden ~/Library
 
-# Set a really fast key repeat.
+# Set a really fast key repeat. 
+# Verify the current setting: defaults read -g KeyRepeat
 defaults write NSGlobalDomain KeyRepeat -int 1
 
 # reduce the initial delay before repeating starts, setting below 10 causes accidental double-typing
-defaults write -g InitialKeyRepeat -int 5
+# verify the current setting: defaults read -g InitialKeyRepeat
+defaults write -g InitialKeyRepeat -int 13
+
 
 # Set the Finder prefs for showing a few different volumes on the Desktop.
 defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
