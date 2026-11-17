@@ -77,7 +77,7 @@ alias use-kube137="brew unlink kubernetes-cli && brew link --overwrite kubernete
 export GPG_TTY=$TTY
 
 ## age
-export SOPS_AGE_KEY_FILE=~/.config/sops/age/key.txt
+export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
 
 ##############
 ## completion
