@@ -44,6 +44,7 @@ typeset -U path PATH
 # Create the directory if it doesn't exist, and generate the key pair
 ## mkdir -p ~/.config/sops/age
 ## age-keygen -o ~/.config/sops/age/key.txt
+## chmod 600 ~/.config/sops/age/keys.txt
 
 #####################
 #####################
