@@ -30,11 +30,23 @@ link_instructions() {
   fi
 }
 
-# Claude Code reads $HOME/AGENTS.md. Tools that scan ~/.agents need their own
-# copy there. Claude Code does not read ~/.agents, so the instructions cannot
-# load twice.
+# Tools that scan ~/.agents need their own copy there. Claude Code does not
+# read ~/.agents, so the instructions cannot load twice.
 link_instructions "$HOME/AGENTS.md"
 link_instructions "$HOME/.agents/AGENTS.md"
+
+# Newer Claude Code reads AGENTS.md by itself. Older versions, and some
+# sessions (Bedrock, telemetry off), read CLAUDE.md only. This import covers
+# them, and Claude Code never loads the same file twice.
+#
+# grep -qxF checks for that exact whole line, quietly. 
+# If the file doesn't exist yet, grep fails, so the line gets added and the file is created.
+# This keeps the import line from being added multiple times every time this script is run.
+mkdir -p "$HOME/.claude"
+import_line='@~/AGENTS.md'
+user_instructions="$HOME/.claude/CLAUDE.md"
+grep -qxF "$import_line" "$user_instructions" 2>/dev/null ||
+  echo "$import_line" >> "$user_instructions"
 
 CLAUDE_SKILLS_DIR="$HOME/.claude/skills"
 mkdir -p "$CLAUDE_SKILLS_DIR"
